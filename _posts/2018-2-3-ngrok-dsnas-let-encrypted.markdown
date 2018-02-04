@@ -2,7 +2,7 @@
 layout:     post
 title:      "ngrok服务器搭建"
 subtitle:   "内附结合黑群晖、Let's Encrypt配置"
-date:       2018-02-0 12:00:00
+date:       2018-02-03 12:00:00
 author:     "multithinking"
 header-img: "img/post-bg-2015.jpg"
 tags:
