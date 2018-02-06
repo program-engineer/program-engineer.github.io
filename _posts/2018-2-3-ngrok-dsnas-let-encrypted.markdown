@@ -27,8 +27,7 @@ ngrok官方代码最新版为1.7，作者似乎已经完成了ngrok 2.0版本，
 
 ngrok实现了一个tcp之上的端到端的tunnel，两端的程序在ngrok实现的Tunnel内透明的进行数据交互。
 
-<img   src="../img/in-post/ngrok-dsnas-let-encrypted/20180205084943.png" alt="tcp之上的端到端的tunnel" />
-
+![img](/img/in-post/ngrok-dsnas-let-encrypted/20180205084943.png)
 
 ## ngrok配置
 
