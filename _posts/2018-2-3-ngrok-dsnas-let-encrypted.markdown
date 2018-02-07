@@ -34,15 +34,15 @@ ngrok分为client端(ngrok)和服务端(ngrokd)，实际使用中的部署如下
 
 内网服务程序可以与ngrok client部署在同一主机，也可以部署在内网可达的其他主机上。ngrok和ngrokd会为建立与public client间的专用通道（tunnel）。
 
-更详细的内容请参考：网友分享 [http://tonybai.com/2015/05/14/ngrok-source-intro/](http://tonybai.com/2015/05/14/ngrok-source-intro/)
-                 [ngrok开发者指导 https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md](https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md)
+更详细的内容请参考：- [网友分享 http://tonybai.com/2015/05/14/ngrok-source-intro/](http://tonybai.com/2015/05/14/ngrok-source-intro/)
+                 - [ngrok开发者指导 https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md](https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md)
 
 想让ngrok与ngrokd顺利建立通信，我们还得制作数字证书,可以是使用OpenSSL自签发，同样也可以使用Let's Encrypt（不了解的请自行Google），下面会有涉及。
 通过阅读前面两个链接的内容，应该大体对ngrok有了一定得了解，但是如果你自己操作一遍会发现在服务端运行帮助命令会看到：
 
 ![img](/img/in-post/ngrok-dsnas-let-encrypted/20180207162236.png)
 
-从图中我们知道它只能设置http、https这两个对外通道，虽然可以自定义端口，但是我们要的可能是单纯的tcp连接，不需要http访问。（例如在连接很群辉时）
+从图中我们知道它只能设置http、https这两个对外通道，虽然可以自定义端口，但是我们要的可能是单纯的tcp连接，不需要http访问。（例如在连接黑群辉时）
 *这个需要在客户端配置文件中进行设置。*
 
 我们再看一下客户端的帮助命令：
