@@ -34,8 +34,9 @@ ngrok分为client端(ngrok)和服务端(ngrokd)，实际使用中的部署如下
 
 内网服务程序可以与ngrok client部署在同一主机，也可以部署在内网可达的其他主机上。ngrok和ngrokd会为建立与public client间的专用通道（tunnel）。
 
-更详细的内容请参考：- [网友分享 http://tonybai.com/2015/05/14/ngrok-source-intro/](http://tonybai.com/2015/05/14/ngrok-source-intro/)
-                 - [ngrok开发者指导 https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md](https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md)
+更详细的内容请参考：
+1、[网友分享 http://tonybai.com/2015/05/14/ngrok-source-intro/](http://tonybai.com/2015/05/14/ngrok-source-intro/)
+2、[ngrok开发者指导 https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md](https://github.com/inconshreveable/ngrok/blob/master/docs/DEVELOPMENT.md)
 
 想让ngrok与ngrokd顺利建立通信，我们还得制作数字证书,可以是使用OpenSSL自签发，同样也可以使用Let's Encrypt（不了解的请自行Google），下面会有涉及。
 通过阅读前面两个链接的内容，应该大体对ngrok有了一定得了解，但是如果你自己操作一遍会发现在服务端运行帮助命令会看到：
@@ -61,17 +62,119 @@ ngrok的基本原理就是这样，详细了解需要仔细阅读上面两个链
 
 ## ngrok配置
 
-
 ### ngrok服务端在vps上的配置
+
+ngrok的配置大部分集中在服务器端，客户端等到配置完之后，直接在服务器端make生成后下载到客户端即可运行。运行编译ngrok程序需要的环境为git+go语言环境。我配置的环境为vps（centos7 内核版本4.14.15-1.el7.elrepo.x86_64，并开启了bbr加速）
+
+#### 首先先装好一些编译需要使用的工具
+
+    yum -y install zlib-devel openssl-devel perl hg cpio expat-devel gettext-devel curl curl-devel 
+    perl-ExtUtils-MakeMaker hg wget gcc gcc-c++
+
+安装git
+
+    wget https://www.kernel.org/pub/software/scm/git/git-2.9.5.tar.gz
+    tar zxvf git-2.9.5.tar.gz 
+    cd git-2.9.5
+    ./configure --prefix=/usr/local/git
+    make
+    make install
+    ln -s /usr/local/git/bin/* /usr/bin/
+
+然后安装go语言环境（这里使用的事google的镜像，国内的镜像也有不少）
+
+    wget https://dl.google.com/go/go1.9.3.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go1.9.3.linux-amd64.tar.gz
+    ln -s /usr/local/go/bin/* /usr/bin
+
+安装完go程序后需要把go编译程序导入export中
+
+    export PATH=$PATH:/usr/local/go/bin
+
+当然，写入.bash_profile更好，重启不会丢失。没有重启的情况下需要执行命令使之生效。
+
+    source .bash_profile 
+
+下载ngrok程序
+
+    cd /usr/local/
+    git clone https://github.com/inconshreveable/ngrok.git
+    cd ngrok/
+
+如果前面的配置都比较顺利的话，配置到这里ngrok的基本环境就有了。接下来要做的就是编译出ngrok的服务器端ngrokd与客户端成ngrok。
+
+生成ngrokd之前需要先配置自签名证书，使传输加密，这里也可以使用Let's Encrypt，在这里先使用自签名介绍，后面再谈另一种方法。
+
+    openssl genrsa -out rootCA.key 2048 
+    openssl req -x509 -new -nodes -key rootCA.key -subj "/CN=DOMAIN" -days 5000 -out rootCA.pem
+    openssl genrsa -out server.key 2048
+    openssl req -new -key server.key -subj "/CN=DOMAIN" -out server.csr 
+    openssl x509 -req -in server.csr -CA rootCA.pem -CAkey rootCA.key CAcreateserial -out server.crt -days 5000
+
+然后复制相关证书。
+
+    yes|cp rootCA.pem ../assets/client/tls/ngrokroot.crt
+    yes|cp server.crt ../assets/server/tls/snakeoil.crt 
+    yes|cp server.key ../assets/server/tls/snakeoil.key
+
+准备好证书后就可以编译ngrokd和ngrok程序了。
+
+//指定环境变量位64位linux版本
+
+    GOOS=linux GOARCH=amd64 #如果是32位系统，这里 GOARCH=386
+    make release-server
+
+启动ngrokd
+
+    ./ngrokd -tlsKey="/usr/local/ngrok/assets/server/tls/snakeoil.key" -tlsCrt="/usr/local/ngrok/assets/server/tls/snakeoil.crt" -domain="你的域名"  -httpAddr=":80" -httpsAddr=":443" -tunnelAddr=":4443"
+
+*-httpAddr默认是80
+-httpsAddr默认是443
+-tunnelAddr默认是4443*
+这些端口号你都可以修改成别的，但是要和客户端的tunnel端口号对应。
+
+当启动之后服务端开始监听以上这几个端口，等待客户端来连接。
+
+**如果打开了防火墙，记得放开这几个端口号的限制。**
+
+    ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:http
+    ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:https
+    ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:pharos
+
+
 
 
 ### ngrok客户端在Linux中的配置
+
+cd到ngrok目录
+
+    //指定环境变量位64位linux版本，如果是32位系统，这里 GOARCH=386
+    GOOS=linux GOARCH=amd64 
+    make release-client
+
+需要注意的是，我这里的环境是Linux，所以编译了Linux版本。客户端也编译的Linux版本，如果你的客户端是其他类型，可以在这里制定对应版本进行编译。
+
+例如：
+
+    GOOS=windows GOARCH=amd64 make release-client
+    //同理，这里的amd64是64位系统，32位改成386
+
+    GOOS=darwin GOARCH=amd64
+    // mac osx，64位，对应的 GOOS 和 GOARCH 是这样的
+
+编译完成后就可以将编译的ngrok文件复制到你想运行的客户端上即可。ngrok文件存在于/bin目录下。
+
 
 ### ngrok客户端配置到黑群晖
 
 
 
-## 稳定运行
+
+### ngrok服务器配置Let's Encrypt
+
+
+
+## 保持稳定运行
 
 ## 易出错位置
 
