@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "ngrok服务器搭建"
-subtitle:   "内附结合黑群晖、Let's Encrypt配置"
+subtitle:   "内附结合黑群晖外网访问、Let's Encrypt配置HTTPS"
 date:       2018-02-03 12:00:00
 author:     "multithinking"
 header-img: "img/post-bg-2015.jpg"
