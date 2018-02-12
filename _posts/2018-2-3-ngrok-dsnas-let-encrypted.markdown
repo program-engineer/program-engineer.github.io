@@ -167,7 +167,46 @@ cd到ngrok目录
 
 ### ngrok客户端配置到黑群晖
 
+ngrok客户端配置到黑群晖系统内是比较简单的，只需要将在ngrok服务器上生成的客户端复制过来即可（注意黑群晖是Linux系统，所以要生成Linux客户端），然后再配置参数文件启动就可以了（bash文件 ngrok.sh）。
 
+首先ssh登录黑群晖（没有启用ssh的请先在web页面控制面板内启用），并进入root账户下。
+
+    admin@DiskStation:/$ 
+    admin@DiskStation:/$ sudo -i
+    Password: （此处密码为admin的密码）
+    root@DiskStation:~# 
+
+建立ngrok文件夹，将ngrok客户端scp过来。并建立配置文件ngrok.cfg。
+
+    root@DiskStation:~/ngrok# ll
+    total 10860
+    drwxrwxrwx 2 root root     4096 Feb  4 16:36 .
+    drwx------ 5 root root     4096 Feb  5 00:18 ..
+    -rwxr-xr-x 1 root root 11105628 Feb  3 08:08 ngrok
+    -rwxrwxrwx 1 root root      160 Feb  4 16:36 ngrok.cfg
+
+
+在这里特别注意的是ngrok.cfg文件内不允许有空格，不允许使用tab缩进，否则会报错。
+
+在ngrok.cf内配置HTTP，HTTPS，tcp都可以。一定要理解这里。如果配置http/https，加入的二级域名必须对应服务器端，否则要使用泛解析渔民，在购买域名页内设置。tcp协议只需要在客户端配置文件中设置即可，需要使用remote_port参数，当启动后，服务端会自动进行监听。
+
+
+    server_addr: $Domain:4443
+    trust_host_root_certs: false
+    tunnels:
+    csd:
+       remote_port: 6690
+       proto:
+         tcp: 6690
+    ds:
+       proto:
+       http: 5000
+
+配置好相应文件之后，启动服务。
+
+    setsid /root/ngrok/ngrok -config=/root/ngrok/ngrok.cfg start-all
+
+setsid ： 将服务在后台启动。
 
 
 ### ngrok服务器配置Let's Encrypt
