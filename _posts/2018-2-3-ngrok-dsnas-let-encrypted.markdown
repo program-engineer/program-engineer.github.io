@@ -198,15 +198,19 @@ ngrok客户端配置到黑群晖系统内是比较简单的，只需要将在ngr
        remote_port: 6690
        proto:
          tcp: 6690
-    ds:
+    dsfile:
+       remote_port: 5000
        proto:
-       http: 5000
+         tcp: 5000
 
-配置好相应文件之后，启动服务。
+配置好相应文件之后(这个没有配置http访问，只配置了cloud station drive与安卓手机客户端DS file的访问)，启动服务。
 
     setsid /root/ngrok/ngrok -config=/root/ngrok/ngrok.cfg start-all
 
 setsid ： 将服务在后台启动。
+
+注意：设置之前要先了解群辉系统各服务所监听的端口。
+参考这个链接 [http://www.sysdj.com/l/yunwei/nas/2016/1205/25.html](http://www.sysdj.com/l/yunwei/nas/2016/1205/25.html)
 
 
 ### ngrok服务器配置Let's Encrypt
