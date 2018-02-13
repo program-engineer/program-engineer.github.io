@@ -7,7 +7,7 @@ author:     "multithinking"
 header-img: "img/post-bg-2015.jpg"
 header-mask:  0.3
 catalog:      true
-multilingual: true
+#multilingual: true
 tags:
     - ngrok
 ---
