@@ -65,11 +65,11 @@ ngrok的基本原理就是这样，详细了解需要仔细阅读上面两个链
 
 ## ngrok配置
 
-### ngrok服务端在vps上的配置
+### 1.ngrok服务端在vps上的配置
 
 ngrok的配置大部分集中在服务器端，客户端等到配置完之后，直接在服务器端make生成后下载到客户端即可运行。运行编译ngrok程序需要的环境为git+go语言环境。我配置的环境为vps（centos7 内核版本4.14.15-1.el7.elrepo.x86_64，并开启了bbr加速）
 
-#### 首先先装好一些编译需要使用的工具
+**首先先装好一些编译需要使用的工具**
 
     yum -y install zlib-devel openssl-devel perl hg cpio expat-devel gettext-devel curl curl-devel 
     perl-ExtUtils-MakeMaker hg wget gcc gcc-c++
@@ -147,7 +147,7 @@ ngrok的配置大部分集中在服务器端，客户端等到配置完之后，
 
 
 
-### ngrok客户端在Linux中的配置
+### 2.ngrok客户端在Linux中的配置
 
 cd到ngrok目录
 
@@ -168,7 +168,7 @@ cd到ngrok目录
 编译完成后就可以将编译的ngrok文件复制到你想运行的客户端上即可。ngrok文件存在于/bin目录下。
 
 
-### ngrok客户端配置到黑群晖
+### 3.ngrok客户端配置到黑群晖
 
 ngrok客户端配置到黑群晖系统内是比较简单的，只需要将在ngrok服务器上生成的客户端复制过来即可（注意黑群晖是Linux系统，所以要生成Linux客户端），然后再配置参数文件启动就可以了（bash文件 ngrok.sh）。
 
@@ -216,7 +216,7 @@ setsid ： 将服务在后台启动。
 参考这个链接 [http://www.sysdj.com/l/yunwei/nas/2016/1205/25.html](http://www.sysdj.com/l/yunwei/nas/2016/1205/25.html)
 
 
-### ngrok服务器配置Let's Encrypt
+### 4.ngrok服务器配置Let's Encrypt
 
 
 
