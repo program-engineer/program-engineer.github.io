@@ -263,6 +263,15 @@ You don't have to be root then, although it is recommended.
 
 将生产的证书加载到Apache服务。最后重启服务。
 
+客户端cfg文件里，使用hostname+https的方式启动客户端（hostname就是你证书的域名）
+然后在客户端第二行设置如下参数：
+
+    trust_host_root_certs: true
+
+确认服务端的启动参数-domain以及客户端cfg文件中的server_addr和证书的域名是同一个，否则会报错误证书的错误。（可以在客户端加上参数-log=log.txt查看日志）
+
+如果你申请的是免费的证书，可能crt文件不带中间商和根证书,这时需要你去网站上把所有证书合在一起。
+
 
 ## 保持稳定运行
 
