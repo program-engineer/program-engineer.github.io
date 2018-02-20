@@ -136,6 +136,8 @@ ngrok的配置大部分集中在服务器端，客户端等到配置完之后，
 -tunnelAddr默认是4443*
 这些端口号你都可以修改成别的，但是要和客户端的tunnel端口号对应。
 
+**注意**，如果不适用http或者https，可以留空，则disable。
+
 当启动之后服务端开始监听以上这几个端口，等待客户端来连接。
 
 **如果打开了防火墙，记得放开这几个端口号的限制。**
@@ -218,9 +220,56 @@ setsid ： 将服务在后台启动。
 
 ### 4.ngrok服务器配置Let's Encrypt
 
+https基于RSA非对称加密算法，客户端利用公钥加密数据（准确来说是会话key），服务端利用对应的私钥来解密；由于公钥的公开性，无法保证正确性，所以引入了第三方权威机构CA来签发数字证书，数字证书中包含服务端的公钥并和私钥一起保存在服务端，客户端必须从服务端获取数字证书，然后从中取出公钥。然而，CA给站点签发数字证书通常都是收费的， 所以，支持HTTPS的站点，需要三个东西：数字证书、私钥和money。为了少花点钱，推荐使用Let's Encrypt，因为它是一个免费的CA。
+
+      Let's Encrypt是国外一个公共的免费SSL项目，由 Linux 基金会托管，它的来头不小，由Mozilla、思科、Akamai、IdenTrust和EFF等组织发起，目的就是向网站自动签发和管理免费证书，以便加速互联网由HTTP过渡到HTTPS，目前Facebook等大公司开始加入赞助行列。Let's Encrypt已经得了 IdenTrust 的交叉签名，这意味着其证书现在已经可以被Mozilla、Google、Microsoft和Apple等主流的浏览器所信任，你只需要在Web 服务器证书链中配置交叉签名，浏览器客户端会自动处理好其它的一切，Let's Encrypt安装简单，未来大规模采用可能性非常大。
+
+一般来说，如果http服务器要配置Let's Encrypt，需要有80端口，因为Let's Encrypt会使用80端口每三个月自动去CA验证服务器证书。也可以说Let's Encrypt证书并不是终生证书，是有期限的，还在三个月验证完可以继续使用。
+
+https证书验证有两种方式，一种是80端口，如果80端口被封的话，一般也可以采用TXT记录的方式，但是这种方法比较麻烦，需要每三个月去更新一下TXT记录，无奈的情况下，才会使用此种方式。因为我的vps在国外，所以不存在80端口被封的情况。默认系统为centos7。并且推荐使用Certbot 安装。
+
+官网有一些比较详细的说明可以参考一下[https://certbot.eff.org/#centosrhel7-apache](https://certbot.eff.org/#centosrhel7-apache)
+
+
+如果要使用acme安装，可以参考如下：
+
+    #Install online
+    Check this project: https://github.com/Neilpang/get.acme.sh
+    curl https://get.acme.sh | sh
+
+    git clone https://github.com/Neilpang/acme.sh.git
+    cd ./acme.sh
+    ./acme.sh --install
+
+You don't have to be root then, although it is recommended.
+
+![img](/img/in-post/ngrok-dsnas-let-encrypted/20180207162906.png)
+
+执行以下命令时请先将httpd服务关闭。
+
+    systemctl stop httpd.service
+
+
+使用命令获取证书，使用dns的方式。（本地80端口无法使用的情况下）
+
+    ./acme.sh --issue --dns -d XXX.com
+
+会生成TXT value值，将这个值进行解析。
+
+等待解析成功后。。。
+运行命令：
+
+    ./acme.sh --renew -d xxx.com
+
+将生产的证书加载到Apache服务。最后重启服务。
 
 
 ## 保持稳定运行
+
+配置完以上内容，大部分服务已经可以使用，如何保持稳定运行是非常重要的。通过运行一段时间的观察，ngrok服务还是比较稳定的。如果偶尔断电，可以将bash加入到自动开机启动内。
+
+当然，如果不放心在运行过程出现断开的的情况，可以考虑使用crontab。
+在黑群晖里，设置一个计划任务，将服务启动命令，写入其中，这样就可以了。
 
 ## 易出错位置
 
